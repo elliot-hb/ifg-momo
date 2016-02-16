@@ -1,6 +1,6 @@
 // character animation test
 // 13.02.2016 Noriyuki
-//xyz
+//blablabla
 
 //Änderung 16.44 Uhr
 //Änderung 16.48 Uhr
