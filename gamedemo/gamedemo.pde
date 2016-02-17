@@ -331,6 +331,11 @@ void draw() {
   cS+=6/frameRate;
   
   //turn the clock the other way round when collision player and enemy
- if(dist(playerX, playerY, gX, gY)<gDiameter)  cS-=1;
+ if(dist(playerX, playerY, gX, gY)<gDiameter)  cS-=3;
+ 
+ if (cS<=0) gameState=GAMEOVER ;
+ 
+ 
+ println(cS);
   
 }
