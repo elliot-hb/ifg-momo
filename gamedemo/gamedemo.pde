@@ -19,10 +19,15 @@ float playeraX; //acceleration along x-axis
 float gravity=0.5; // define gravity
 float floorHeight;
 
-// Position of the goal center
-// Will be set by restart
-float goalX=0, goalY=0;
-//give gravity
+float gX; //enemyX
+float gVX = -2; //enemy velocity on x axis
+float gY; //enemyY
+int gDiameter=28; //enemy diameter
+color gC; // enemy color
+
+//counts the flowers, to set when win
+int counter;
+
 // Whether to illustrate special functions of class Map
 boolean showSpecialFunctions=false;
 
@@ -30,14 +35,15 @@ boolean showSpecialFunctions=false;
 // used for scrolling
 float screenLeftX, screenTopY;
 
-float levitationTimer=0;
-
 float time;
 int GAMEWAIT=0, GAMERUNNING=1, GAMEOVER=2, GAMEWON=3;
 int gameState;
 
 PImage backgroundImg;
 PImage P;
+
+////declare classes
+//GreyMan myGreyMen;
 
 ///////// Loads a set of numbered images ///////////////
 // filenames is a relative filename with TWO 00s
@@ -69,6 +75,8 @@ ArrayList<PImage> playerImgs;
 int playerPhase;
 //////////////////////////////////////////////
 
+//Enemy Grey man, define the ArrayList
+
 void setup() {
   size( 1000, 780 );
   backgroundImg = loadImage ("images/background.png"); // load the backgroundimage
@@ -76,6 +84,12 @@ void setup() {
   //floorHeight=height;
 
   newGame ();
+
+
+  //// instantiation of the ArrayList of the enemy
+  //for (int i=0; i<3; i++) {
+  //  greyMans.add(new GreyMan(random(width/2+100, width), floorHeight-20, 40, color(100)));
+  //}
 }
 
 void newGame () {
@@ -85,17 +99,19 @@ void newGame () {
       // put player at 'S' tile and replace with 'F'  
       if ( map.at(x, y) == 'S' ) {
         playerX = map.centerXOfTile (x);
-        playerY = map.centerYOfTile (y);
+        playerY= map.centerYOfTile (y);
         map.set(x, y, 'F');
       }
-      // put goal at 'E' tile  
-      if ( map.at(x, y) == 'E' ) {
-        goalX = map.centerXOfTile (x);
-        goalY = map.centerYOfTile (y);
+
+      if ( map.at(x, y) == 'H' ) {
+        gX = map.centerXOfTile (x);
+        gY = map.centerYOfTile (y);
+        map.set(x, y, 'F');
       }
     }
   }
   time=0;
+  counter=0;
   //playerX=0;
   playerVX = 0;
   playerVY = 0;
@@ -118,11 +134,10 @@ void newGame () {
 
 void updatePlayer() {
   // update player
-  //playerVX=3;
   gravity=0.5;
   float nextX = playerX + playerVX, 
     nextY = playerY + playerVY;
-    
+
   //collision bottom-half of player with top of walls
   if ( map.testTileInRect(nextX-playerR, nextY, 2*playerR, playerR, "W" )) {
     playerVX = 0;
@@ -131,8 +146,8 @@ void updatePlayer() {
     nextY = playerY;
     gravity=0;
   }
-  
-    //debugging part if hanging with the butt in the wall
+
+  //debugging part if hanging with the butt in the wall
   if (keyPressed && keyCode == UP  && map.testTileInRect(nextX-playerR, nextY, 2*playerR, playerR, "W" )) {
     playerY= playerY-5;
     playerVX = 0;
@@ -141,9 +156,8 @@ void updatePlayer() {
     nextY = playerY;
     gravity=0;
   }
-  
-  
-//collision upper-half of player with bottom of walls
+
+  //collision upper-half of player with bottom of walls
   if ( map.testTileInRect( nextX-playerR, nextY-playerR, 2*playerR, playerR, "W" )) {
     playerY = playerY+1;
     playerVX = -playerVX;
@@ -153,75 +167,37 @@ void updatePlayer() {
     gravity=0;
   }
 
-//collision left-upper-corner of player with left side of walls
+  //collision left-upper-corner of player with left side of walls
   if ( map.testTileInRect(nextX-playerR, nextY-playerR, playerR, playerR, "W" )) {
-  playerX = playerX+10;
-  playerVX = -playerVX;
-  playerVY = -playerVY;
-  nextX = playerX;
-  nextY = playerY;
-  gravity=0;
+    playerX = playerX+10;
+    playerVX = -playerVX;
+    playerVY = -playerVY;
+    nextX = playerX;
+    nextY = playerY;
+    gravity=0;
   }
-  
-//collision right-upper-corner of player with right side of walls
+
+  //collision right-upper-corner of player with right side of walls
   if ( map.testTileInRect(nextX, nextY-playerR, playerR, playerR, "W" )) {
-  playerX = playerX-10;
-  playerVX = -playerVX;
-  playerVY = -playerVY;
-  nextX = playerX;
-  nextY = playerY;
-  gravity=0;
+    playerX = playerX-10;
+    playerVX = -playerVX;
+    playerVY = -playerVY;
+    nextX = playerX;
+    nextY = playerY;
+    gravity=0;
   }
 
-
-//if ( map.testTileInRect( nextX-playerR, nextY-playerR, 2*playerR, 2*playerR, "W" )) {
-//  playerVX = -playerVX;
-//  playerVY = -playerVY;
-//  nextX = playerX;
-//  nextY = playerY;
-//  gravity=0;
-//}
-
-//if ( map.testTileInRect( nextX-playerR, nextY-playerR, 2*playerR, 2*playerR, "W" )) {
-//  playerVX = 0;
-//  playerVY = 0;
-//  nextX = playerX;
-//  nextY = playerY;
-//  gravity=0;
-//}
-
-
-
-
-if ( map.testTileFullyInsideRect (nextX-playerR, nextY-playerR, 2*playerR, 2*playerR, "H_") && levitationTimer==0 ) {
-  gameState=GAMEOVER;
-}
-if ( map.testTileFullyInsideRect (nextX-playerR, nextY-playerR, 2*playerR, 2*playerR, "E" ) ) {
-  gameState=GAMEWON;
-}
 Map.TileReference tile =map.findTileInRect(nextX-playerR, nextY-playerR, 2*playerR, 2*playerR, "P");
 if (tile!=null) {
   //levitationTimer=5;
   map.set(tile.x, tile.y, 'F');
+  counter+=1;
 }
 
-//if (map.testTileInRect(nextX-playerR, nextY-playerR, 2*playerR, 2*playerR, "P")) {
-//  levitationTimer=5;
-//  //map.set(,,,, "F");
-//}
 
 
-
-//levitationTimer-=1/frameRate;
-
-//fill(255);
-//text("Bonus time ; "+levitationTimer, 50, 50);
-//if (levitationTimer<0) {
-//  levitationTimer=0;
-//}
-
-playerX = nextX;
-playerY = nextY;
+  playerX = nextX;
+  playerY = nextY;
 }
 
 // Maps x to an output y = map(x,xRef,yRef,factor), such that
@@ -230,6 +206,26 @@ playerY = nextY;
 float map (float x, float xRef, float yRef, float factor) {
   return factor*(x-xRef)+yRef;
 }
+
+void updateEnemy() {
+    float nextgX = gX + gVX;
+
+  //collision left-upper-corner of enemy with left side of walls
+  if ( map.testTileInRect(nextgX-14, gY-14, gDiameter/2, gDiameter, "W" )) {
+    gVX = 2;
+    nextgX = gX;
+  }
+
+  //collision right-upper-corner of player with right side of walls
+  if ( map.testTileInRect(nextgX+14, gY-14, gDiameter/2, gDiameter, "W" )) {
+    gVX = -2;
+    nextgX = gX;
+  }
+
+
+  gX = nextgX;
+}
+
 
 void drawBackground() {
   // Explanation to the computation of x and y:
@@ -259,6 +255,8 @@ void drawPlayer() {
   //fill(0, 255, 255);
   imageMode(CENTER);
   image(playerImgs.get(playerPhase), playerX- screenLeftX, playerY - screenTopY); // depict the player
+  fill(gC);
+  ellipse(gX-screenLeftX, gY - screenTopY, gDiameter, gDiameter);
 
   //ellipse( playerX - screenLeftX, playerY - screenTopY, 2*playerR, 2*playerR );
 
@@ -270,22 +268,14 @@ void drawPlayer() {
     if (nextHole!=null) line (playerX-screenLeftX, playerY-screenTopY, 
       nextHole.centerX-screenLeftX, nextHole.centerY-screenTopY);
 
-    // draw line of sight to goal (until next wall) (understanding this is optional)
-    stroke(0, 255, 255);  
-    Map.TileReference nextWall = map.findTileOnLine (playerX, playerY, goalX, goalY, "W");
-    if (nextWall!=null) 
-      line (playerX-screenLeftX, playerY-screenTopY, nextWall.xPixel-screenLeftX, nextWall.yPixel-screenTopY);
-    else
-      line (playerX-screenLeftX, playerY-screenTopY, goalX-screenLeftX, goalY-screenTopY);
-  }
 }
-
+}
 
 void drawText() { 
   textAlign(CENTER, CENTER);
   fill(0, 255, 0);  
   textSize(40);  
-  if (gameState==GAMEWAIT) text ("press space to start", width/2, height/2);
+  if (gameState==GAMEWAIT) text ("collect 3 flowers, press space to start", width/2, height/2);
   else if (gameState==GAMEOVER) text ("game over", width/2, height/2);
   else if (gameState==GAMEWON) text ("won in "+ round(time) + " seconds", width/2, height/2);
 }
@@ -294,6 +284,9 @@ void drawText() {
 void draw() {
   if (gameState==GAMERUNNING) {
     updatePlayer();
+    updateEnemy();
+    movePlayer();
+  moveEnemy();
     time+=1/frameRate;
   } else if (keyPressed && key==' ') {
     if (gameState==GAMEWAIT) gameState=GAMERUNNING;
@@ -305,6 +298,10 @@ void draw() {
   drawBackground();
   drawMap();
   drawPlayer();
-  movePlayer();
   drawText();
+  
+  //win when 3 flowers collected
+  if (counter==3) gameState=GAMEWON;
+  //lose when collision with enemy
+  if(dist(playerX, playerY, gX, gY)<gDiameter)gameState=GAMEOVER;
 }

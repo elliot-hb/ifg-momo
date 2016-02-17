@@ -53,7 +53,7 @@ void movePlayer() {
   //}
 
   if (keyPressed && keyCode==UP &&  playerVY==0) {
-    playerVY=-12;
+    playerVY=-6;
   }
 
 
