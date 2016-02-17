@@ -40,7 +40,7 @@ ArrayList<PImage> loadImages (String filePattern) {
   do {
     String fname = filePattern.replace(qmString, nf(ctr, qmString.length()));
     InputStream input = createInput(fname);
-    if (input==null) break; 
+    if (input==null) break;
     PImage img = loadImage (fname);
     if (img==null) break;
     images.add(img);
