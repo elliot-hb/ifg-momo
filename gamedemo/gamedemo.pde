@@ -12,6 +12,8 @@ float playerX; // position of playerX
 float playerY; // position of playerY
 color pC; // color of player
 
+float cS;
+
 float playerVX; //speed along x-axis
 float playerVY; //speed along y-axis
 float playeraX; //acceleration along x-axis
@@ -303,5 +305,32 @@ void draw() {
   //win when 3 flowers collected
   if (counter==3) gameState=GAMEWON;
   //lose when collision with enemy
-  if(dist(playerX, playerY, gX, gY)<gDiameter)gameState=GAMEOVER;
+ 
+  
+  
+ // clock
+ //big pointer
+  pushMatrix();
+  translate(width/2-screenLeftX, height/2-25);
+  rotate(radians(cS));
+  stroke(0);
+  strokeWeight(2);
+  line(0, 0, 0, -35);
+  noStroke();
+  popMatrix();
+//small pointer
+  pushMatrix();
+  translate(width/2-screenLeftX, height/2-25);
+  rotate(radians(cS/12));
+  stroke(0);
+  strokeWeight(4);
+  line(0, 0, 0, -20);
+  noStroke();
+  popMatrix(); 
+  
+  cS+=6/frameRate;
+  
+  //turn the clock the other way round when collision player and enemy
+ if(dist(playerX, playerY, gX, gY)<gDiameter)  cS-=1;
+  
 }

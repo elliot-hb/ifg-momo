@@ -86,6 +86,11 @@ void movePlayer() {
   if (!keyPressed && playerVX==0 && playeraX==0 && playerVY==0) {
     playerPhase=0;
   }
+  
+  //collision with enemy
+  
+  if(dist(playerX, playerY, gX, gY)<gDiameter) playerPhase=9;
+  
 }
 
 void keyReleased() {
