@@ -1,11 +1,14 @@
 // character animation test
 // 13.02.2016 Noriyuki
 
+//Änderung 16.44 Uhr
+//Änderung 16.48 Uhr
 
 /////////player
 float playerX; // position of playerX
 float playerY; // position of playerY
 color pC; // color of player
+
 
 float VX; //speed along x-axis
 float VY; //speed along y-axis
