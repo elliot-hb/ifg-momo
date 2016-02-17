@@ -125,14 +125,24 @@ void updatePlayer() {
     
   //collision bottom-half of player with top of walls
   if ( map.testTileInRect(nextX-playerR, nextY, 2*playerR, playerR, "W" )) {
-    //debugging part, but bad for the array
-    //playerY= playerY-1;
     playerVX = 0;
     playerVY = 0;
     nextX = playerX;
     nextY = playerY;
     gravity=0;
   }
+  
+    //debugging part if hanging with the butt in the wall
+  if (keyPressed && keyCode == UP  && map.testTileInRect(nextX-playerR, nextY, 2*playerR, playerR, "W" )) {
+    playerY= playerY-5;
+    playerVX = 0;
+    playerVY = 0;
+    nextX = playerX;
+    nextY = playerY;
+    gravity=0;
+  }
+  
+  
 //collision upper-half of player with bottom of walls
   if ( map.testTileInRect( nextX-playerR, nextY-playerR, 2*playerR, playerR, "W" )) {
     playerY = playerY+1;
