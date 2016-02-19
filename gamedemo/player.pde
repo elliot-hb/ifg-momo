@@ -88,9 +88,9 @@ void movePlayer() {
   }
   
   //collision with enemy
-  
-  if(dist(playerX, playerY, gX, gY)<gDiameter) playerPhase=9;
-  
+    for (int i=0; i<3; i++) {
+ if(dist(playerX, playerY, gX[i], gY[i])<gDiameter) playerPhase=9;
+  }
 }
 
 void keyReleased() {
