@@ -44,9 +44,6 @@ int gameState;
 PImage backgroundImg;
 PImage P;
 
-////declare classes
-//GreyMan myGreyMen;
-
 ///////// Loads a set of numbered images ///////////////
 // filenames is a relative filename with TWO 00s
 // e.g. images/fox-00.png. The function then tries
@@ -77,7 +74,13 @@ ArrayList<PImage> playerImgs;
 int playerPhase;
 //////////////////////////////////////////////
 
+
+
+
 //Enemy Grey man, define the ArrayList
+ArrayList <GreyMan> greyMans=new ArrayList<GreyMan>();
+
+
 
 void setup() {
   size( 1000, 780 );
@@ -105,7 +108,12 @@ void newGame () {
         map.set(x, y, 'F');
       }
 
+
+//put enemies at 'H' tile and replace with 'F'
       if ( map.at(x, y) == 'H' ) {
+        
+//gX and gY should be gX[1], gX[2], etc., array of gX, gY for several enemies. Maybe we need another for loop to replace many 'H's with 'F's to get many enemies
+        
         gX = map.centerXOfTile (x);
         gY = map.centerYOfTile (y);
         map.set(x, y, 'F');
@@ -210,6 +218,10 @@ float map (float x, float xRef, float yRef, float factor) {
 }
 
 void updateEnemy() {
+  
+// we also need arrays here to update many enemies instead of just one
+  
+  
     float nextgX = gX + gVX;
 
   //collision left-upper-corner of enemy with left side of walls
@@ -237,9 +249,10 @@ void drawBackground() {
   // (map.widthPixel), i.e. screenLeftX=map.widthPixel()/2-width/2. Then we want
   // the center of the background image (backgroundImg.width/2) also correspond to the screen
   // center (width/2), i.e. x=-backgroundImg.width/2+width/2.
-  float x = map (screenLeftX, map.widthPixel()/2-width/2, -backgroundImg.width/2+width/2, -0.5);
-  float y = map (screenTopY, map.heightPixel()/2-height/2, -backgroundImg.height/2+height/2, -0.5);
-  image (backgroundImg, x, y);
+  //float x = map (screenLeftX, map.widthPixel()/2-width/2, -backgroundImg.width/2+width/2, -0.5);
+  ////float y = map (screenTopY, map.heightPixel()/2-height/2, -backgroundImg.height/2+height/2, -0.5);
+  //image (backgroundImg, x, y);
+  background(0);
 }
 
 
@@ -258,7 +271,6 @@ void drawPlayer() {
   imageMode(CENTER);
   image(playerImgs.get(playerPhase), playerX- screenLeftX, playerY - screenTopY); // depict the player
   fill(gC);
-  ellipse(gX-screenLeftX, gY - screenTopY, gDiameter, gDiameter);
 
   //ellipse( playerX - screenLeftX, playerY - screenTopY, 2*playerR, 2*playerR );
 
@@ -288,7 +300,7 @@ void draw() {
     updatePlayer();
     updateEnemy();
     movePlayer();
-  moveEnemy();
+    moveEnemy();
     time+=1/frameRate;
   } else if (keyPressed && key==' ') {
     if (gameState==GAMEWAIT) gameState=GAMERUNNING;
@@ -300,6 +312,16 @@ void draw() {
   drawBackground();
   drawMap();
   drawPlayer();
+  
+  
+ //has to be in a loop with an array to draw several enemies?
+    for (int i=0; i<greyMans.size(); i++) {
+    greyMans.get(i).drawEnemy();
+  }
+  
+  
+  
+  
   drawText();
   
   //win when 3 flowers collected
