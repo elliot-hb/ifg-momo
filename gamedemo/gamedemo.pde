@@ -1,7 +1,16 @@
 Map map;
 
-int enemyX;
-int enemyY;
+GreyMan enemy1, enemy2, enemy3 ;
+
+//enemy arrays
+float [] enemyX = new float [10];
+float [] enemyY = new float [10];
+float [] enemyVX = new float [10];
+float [] nextEnemy = new float [10];
+float gDiameter;
+//float [] enemyVY = new float [10];
+//float enemyCount = 0; 
+//color gC; // enemy color
 
 float playerR = 28;
 
@@ -67,12 +76,12 @@ int playerPhase;
 
 
 //enemy variables
-int [] gX;
-int [] gY;
-int [] gVX; //enemy velocity on x axis
-int [] nextgX;
-int gDiameter=28; //enemy diameter
-color gC; // enemy color
+//int [] gX;
+//int [] gY;
+//int [] gVX; //enemy velocity on x axis
+//int [] nextgX;
+//int gDiameter=28; //enemy diameter
+//color gC; // enemy color
 
 
 //Enemy Grey man, define the ArrayList
@@ -87,10 +96,12 @@ void setup() {
   //floorHeight=height;
 
   newGame ();
-
+ enemy1 = new GreyMan();
+ enemy2 = new GreyMan (100,100,10);
+ 
   // instantiation of the ArrayList of the enemy
   for (int i=0; i<3; i++) {
-    greyMans.add(new GreyMan(200, 150, 28));
+   greyMans.add(new GreyMan(200, 150, 28));
   }
 }
 
@@ -106,17 +117,17 @@ void newGame () {
       }
 
 
-      ////put enemies at 'H' tile and replace with 'F'
-      //      if ( map.at(x, y) == 'H' ) {
+      //put enemies at 'H' tile and replace with 'F'
+           if ( map.at(x, y) == 'H' ) {
 
-      ////gX and gY should be gX[1], gX[2], etc., array of gX, gY for several enemies. Maybe we need another for loop to replace many 'H's with 'F's to get many enemies
-      //        for (int i=0; i<3; i++) {
-      //        gX[i] = map.centerXOfTile (x);
-      //        gY[i] = map.centerYOfTile (y);
-      //        }
-      //        map.set(x, y, 'F');
+      //gX and gY should be gX[1], gX[2], etc., array of gX, gY for several enemies. Maybe we need another for loop to replace many 'H's with 'F's to get many enemies
+             for (int i=0; i<3; i++) {
+             enemyX[i] = map.centerXOfTile (x);
+             enemyY[i] = map.centerYOfTile (y);
+             }
+             map.set(x, y, 'F');
 
-      //      }
+           }
     }
   }
   time=0;
@@ -208,23 +219,23 @@ void updateEnemy() {
   // we also need arrays here to update many enemies instead of just one
 
   for (int i=0; i<3; i++) {
-    nextgX[i]= gX[i] + gVX[i];
+    nextEnemy[i]= enemyX[i] + enemyVX[i];
   }
 
   //collision left-upper-corner of enemy with left side of walls
   for (int i=0; i<3; i++) {
-    if ( map.testTileInRect(nextgX[i]-14, gY[i]-14, gDiameter/2, gDiameter, "W" )) {
-      gVX[i] = 2;
-      nextgX[i] = gX[i];
+    if ( map.testTileInRect(nextEnemy[i]-14, enemyY[i]-14, gDiameter/2, gDiameter, "W" )) {
+      enemyVX[i] = 2;
+      nextEnemy[i] = enemyX[i];
     }
 
 
     //collision right-upper-corner of player with right side of walls
-    if ( map.testTileInRect(nextgX[i]+14, gY[i]-14, gDiameter/2, gDiameter, "W" )) {
-      gVX[i] = -2;
-      nextgX[i] = gX[i];
+    if ( map.testTileInRect(nextEnemy[i]+14, enemyY[i]-14, gDiameter/2, gDiameter, "W" )) {
+      enemyVX[i] = -2;
+      nextEnemy[i] = enemyX[i];
     }
-    gX[i] = nextgX[i];
+    enemyX[i] = nextEnemy[i];
   }
 }
 
@@ -257,10 +268,10 @@ void drawPlayer() {
   noStroke();
   //fill(0, 255, 255);
   imageMode(CENTER);
-  image(playerImgs.get(playerPhase), playerX- screenLeftX, playerY - screenTopY); // depict the player
-  fill(gC);
+  image(playerImgs.get(playerPhase), playerX, playerY); // depict the player
+  //fill(gC);
 
-  //ellipse( playerX - screenLeftX, playerY - screenTopY, 2*playerR, 2*playerR );
+  ellipse( playerX - screenLeftX, playerY - screenTopY, 2*playerR, 2*playerR );
 
   // understanding this is optional, skip at first sight
   if (showSpecialFunctions) {
@@ -284,12 +295,12 @@ void drawText() {
 
 void draw() {
   if (gameState==GAMERUNNING) {
-    //updatePlayer();
-    //updateEnemy();
-    //movePlayer();
-    //for (int i=0; i<greyMans.size(); i++) {
-    //  greyMans.get(i).moveEnemy();
-    //}
+    updatePlayer();
+    updateEnemy();
+    movePlayer();
+    for (int i=0; i<greyMans.size(); i++) {
+     greyMans.get(i).moveEnemy();
+    }
 
     time+=1/frameRate;
   } else if (keyPressed && key==' ') {
@@ -301,13 +312,13 @@ void draw() {
 
   drawBackground();
   drawMap();
-  //drawPlayer();
+  drawPlayer();
 
 
 //  //has to be in a loop with an array to draw several enemies?
-//  for (int i=0; i<greyMans.size(); i++) {
-//    greyMans.get(i).drawEnemy();
-//  }
+ for (int i=0; i<greyMans.size(); i++) {
+   greyMans.get(i).drawEnemy();
+ }
 
 
 
@@ -343,9 +354,9 @@ void draw() {
   cS+=6/frameRate;
 
   ////turn the clock the other way round when collision player and enemy
-  //for (int i=0; i<3; i++) {
-  //  if (dist(playerX, playerY, gX[i], gY[i])<gDiameter)  cS-=3;
-  //}
+  for (int i=0; i<3; i++) {
+   if (dist(playerX, playerY, enemyX[i], enemyY[i])<gDiameter)  cS-=3;
+  }
 
   if (cS<=0) gameState=GAMEOVER ;
 
