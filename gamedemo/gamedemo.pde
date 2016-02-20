@@ -21,7 +21,8 @@ float [] gVX; //enemy velocity on x axis
 float [] gY; //position of enemy on y axis
 char [] enemyStartTileName = {'X', 'Y', 'Z'}; //list of the names of the tiles where enemies appear, add more tilenames, to get more enemies, but also increase the numOfEnemies then!
 int numOfEnemies = 3; //numberOfEnemies
-int gDiameter=28; //enemy diameter
+int gDiameter=28; //enemy diamete
+float huntingSpeed = 0.95; //increasing this will let the enemy hunt the player faster
 color gC;
 
 //counts the flowers, to set when win
@@ -216,27 +217,28 @@ void updateEnemy() {
     if (map.testTileOnLine (playerX, playerY, gX[i], gY[i], "W")) {
 
       //collision left-upper-corner of enemy with left side of walls
-      if ( map.testTileInRect(nextgX[i]-14, gY[i]-14, gDiameter/2, gDiameter, "W" )) {
-        gVX[i] = 2;
+      if ( map.testTileInRect(nextgX[i]-gDiameter/2, gY[i]-14, gDiameter/2, gDiameter, "W" )) {
+        gVX[i] = -gVX[i];
         nextgX[i] = gX[i];
       }
 
       //collision right-upper-corner of player with right side of walls
-      if ( map.testTileInRect(nextgX[i], gY[i]-14, gDiameter/2, gDiameter, "W" )) {
-        gVX[i] = -2;
+      if ( map.testTileInRect(nextgX[i], gY[i]-gDiameter/2, gDiameter/2, gDiameter, "W" )) {
+        gVX[i] = -gVX[i];
         nextgX[i] = gX[i];
       }
 
       //debugging for modus after hunting player
-      if ( map.testTileFullyInsideRect(nextgX[i]-14, gY[i]-14, gDiameter/2, gDiameter, "W" )) {
-        gVX[i] = 2;
+      if ( map.testTileFullyInsideRect(nextgX[i]-gDiameter, gY[i]-gDiameter/2, gDiameter/2, gDiameter, "W" )) {
+        gX[i] += 1;
+        gVX[i] = -gVX[i];
         nextgX[i] = gX[i];
       }
 
       //debugging for modus after hunting player
-      if ( map.testTileFullyInsideRect(nextgX[i]+14, gY[i], gDiameter, gDiameter, "W" )) {
+      if ( map.testTileFullyInsideRect(nextgX[i]+gDiameter/2, gY[i], gDiameter, gDiameter, "W" )) {
         gX[i] -= 1;
-        gVX[i] = -2;
+        gVX[i] = -gVX[i];
         nextgX[i] = gX[i];
       }
 
@@ -333,7 +335,7 @@ void draw() {
 
 //let the enemy hunt the player when no wall is between them
   for (int i = 0; i < enemys.size(); i++) {
-    if (!map.testTileOnLine (playerX, playerY, gX[i], gY[i], "W")) gX[i]=lerp(playerX, gX[i], 0.95);
+    if (!map.testTileOnLine (playerX-playerR, playerY, gX[i]+gDiameter/2, gY[i], "W") || !map.testTileOnLine (playerX-playerR, playerY, gX[i]-gDiameter/2, gY[i], "W")) gX[i]=lerp(playerX, gX[i], huntingSpeed);
   }
 
   if (cS<0 || cS>360) gameState=GAMEOVER ;
