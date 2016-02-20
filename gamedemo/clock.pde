@@ -18,7 +18,7 @@
   noStroke();
   popMatrix(); 
 
-  cS+=6/frameRate;
+ if (gameState==GAMERUNNING) cS+=6/frameRate;
 
   //turn the clock the other way round when collision player and enemy
 

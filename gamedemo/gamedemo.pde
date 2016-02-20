@@ -318,7 +318,9 @@ void draw() {
   drawBackground();
   drawMap();
   drawPlayer();
+  drawClock();
   drawText();
+
  //draw the enemies
   for (int i=0; i<enemys.size(); i++) {
     enemys.get(i).drawEnemy(gX[i], gY[i], gDiameter);
@@ -328,15 +330,13 @@ void draw() {
   if (counter==3) gameState=GAMEWON;
   //lose when collision with enemy
  
- drawClock();
 
- 
 //let the enemy hunt the player when no wall is between them
   for (int i = 0; i < enemys.size(); i++) {
     if (!map.testTileOnLine (playerX, playerY, gX[i], gY[i], "W")) gX[i]=lerp(playerX, gX[i], 0.95);
   }
 
-  if (cS<=0) gameState=GAMEOVER ;
+  if (cS<0 || cS>360) gameState=GAMEOVER ;
 
 
   println(cS);
