@@ -1,17 +1,6 @@
 Map map;
 
-GreyMan enemy1, enemy2, enemy3 ;
-
-//enemy arrays
-float [] enemyX = new float [10];
-float [] enemyY = new float [10];
-float [] enemyVX = new float [10];
-float [] nextEnemy = new float [10];
-float gDiameter;
-//float [] enemyVY = new float [10];
-//float enemyCount = 0; 
-//color gC; // enemy color
-
+// The player is a circle and this is its radius
 float playerR = 28;
 
 float playerX; // position of playerX
@@ -26,6 +15,14 @@ float playeraX; //acceleration along x-axis
 
 float gravity=0.5; // define gravity
 float floorHeight;
+
+float [] gX;  //position of enemy on x axis
+float [] gVX; //enemy velocity on x axis
+float [] gY; //position of enemy on y axis
+char [] enemyStartTileName = {'X', 'Y', 'Z'}; //list of the names of the tiles where enemies appear, add more tilenames, to get more enemies, but also increase the numOfEnemies then!
+int numOfEnemies = 3; //numberOfEnemies
+int gDiameter=28; //enemy diameter
+color gC;
 
 //counts the flowers, to set when win
 int counter;
@@ -43,6 +40,9 @@ int gameState;
 
 PImage backgroundImg;
 PImage P;
+
+////declare classes
+//GreyMan myGreyMen;
 
 ///////// Loads a set of numbered images ///////////////
 // filenames is a relative filename with TWO 00s
@@ -74,35 +74,28 @@ ArrayList<PImage> playerImgs;
 int playerPhase;
 //////////////////////////////////////////////
 
-
-//enemy variables
-//int [] gX;
-//int [] gY;
-//int [] gVX; //enemy velocity on x axis
-//int [] nextgX;
-//int gDiameter=28; //enemy diameter
-//color gC; // enemy color
-
-
-//Enemy Grey man, define the ArrayList
-ArrayList <GreyMan> greyMans=new ArrayList<GreyMan>();
-
-
+//define the ArrayList of the enemys
+ArrayList <Enemy> enemys=new ArrayList<Enemy>();
 
 void setup() {
-  size( 900, 450 );
+  size( 1000, 780 );
   backgroundImg = loadImage ("images/background.png"); // load the backgroundimage
   playerImgs=loadImages("images/player-??.png");
-  //floorHeight=height;
+
+
+  //set size of the enemy arrays
+  gX = new float[numOfEnemies];
+  gY = new float[numOfEnemies];
+  gVX = new float[numOfEnemies];
+
+  //add enemies as long as the length of gX isn't reached
+  for (int i = 0; i<gX.length; i++) {
+    enemys.add(new Enemy(gX[i], gY[i]));
+    //let the enemies walk in -2 steps on x-axis at the beginning
+    gVX[i] = -2;
+  }
 
   newGame ();
- enemy1 = new GreyMan();
- enemy2 = new GreyMan (100,100,10);
- 
-  // instantiation of the ArrayList of the enemy
-  for (int i=0; i<3; i++) {
-   greyMans.add(new GreyMan(200, 150, 28));
-  }
 }
 
 void newGame () {
@@ -116,28 +109,24 @@ void newGame () {
         map.set(x, y, 'F');
       }
 
-
-      //put enemies at 'H' tile and replace with 'F'
-           if ( map.at(x, y) == 'H' ) {
-
-      //gX and gY should be gX[1], gX[2], etc., array of gX, gY for several enemies. Maybe we need another for loop to replace many 'H's with 'F's to get many enemies
-             for (int i=0; i<3; i++) {
-             enemyX[i] = map.centerXOfTile (x);
-             enemyY[i] = map.centerYOfTile (y);
-             }
-             map.set(x, y, 'F');
-
-           }
+      //put all enemies on the map on the tiles with a tilename on the array enemyStartTileName, replace those tiles with 'F'
+      for (int i = 0; i<gX.length; i++) {
+        if ( map.at(x, y) == enemyStartTileName[i] ) {
+          gX[i] = map.centerXOfTile (x);
+          gY[i] = map.centerYOfTile (y);
+          map.set(x, y, 'F');
+        }
+      }
     }
   }
   time=0;
   counter=0;
+  cS=0;
   playerVX = 0;
   playerVY = 0;
   gravity=0;
   gameState = GAMEWAIT;
 }
-
 
 void updatePlayer() {
   // update player
@@ -194,14 +183,13 @@ void updatePlayer() {
     gravity=0;
   }
 
+  //collect flowers
   Map.TileReference tile =map.findTileInRect(nextX-playerR, nextY-playerR, 2*playerR, 2*playerR, "P");
   if (tile!=null) {
     //levitationTimer=5;
     map.set(tile.x, tile.y, 'F');
     counter+=1;
   }
-
-
 
   playerX = nextX;
   playerY = nextY;
@@ -216,26 +204,46 @@ float map (float x, float xRef, float yRef, float factor) {
 
 void updateEnemy() {
 
-  // we also need arrays here to update many enemies instead of just one
+  float [] nextgX;
+  nextgX = new float[numOfEnemies];
 
-  for (int i=0; i<3; i++) {
-    nextEnemy[i]= enemyX[i] + enemyVX[i];
-  }
+  for (int i = 0; i<nextgX.length; i++) {
 
-  //collision left-upper-corner of enemy with left side of walls
-  for (int i=0; i<3; i++) {
-    if ( map.testTileInRect(nextEnemy[i]-14, enemyY[i]-14, gDiameter/2, gDiameter, "W" )) {
-      enemyVX[i] = 2;
-      nextEnemy[i] = enemyX[i];
+    nextgX[i] = gX[i]+ gVX[i];
+
+
+    // do the following only when wall is between player and enemy (let the enemies walk up and down on x-axis, while not seeing the player)
+    if (map.testTileOnLine (playerX, playerY, gX[i], gY[i], "W")) {
+
+      //collision left-upper-corner of enemy with left side of walls
+      if ( map.testTileInRect(nextgX[i]-14, gY[i]-14, gDiameter/2, gDiameter, "W" )) {
+        gVX[i] = 2;
+        nextgX[i] = gX[i];
+      }
+
+      //collision right-upper-corner of player with right side of walls
+      if ( map.testTileInRect(nextgX[i], gY[i]-14, gDiameter/2, gDiameter, "W" )) {
+        gVX[i] = -2;
+        nextgX[i] = gX[i];
+      }
+
+      //debugging for modus after hunting player
+      if ( map.testTileFullyInsideRect(nextgX[i]-14, gY[i]-14, gDiameter/2, gDiameter, "W" )) {
+        gVX[i] = 2;
+        nextgX[i] = gX[i];
+      }
+
+      //debugging for modus after hunting player
+      if ( map.testTileFullyInsideRect(nextgX[i]+14, gY[i], gDiameter, gDiameter, "W" )) {
+        gX[i] -= 1;
+        gVX[i] = -2;
+        nextgX[i] = gX[i];
+      }
+
+
+
+      gX[i] = nextgX[i];
     }
-
-
-    //collision right-upper-corner of player with right side of walls
-    if ( map.testTileInRect(nextEnemy[i]+14, enemyY[i]-14, gDiameter/2, gDiameter, "W" )) {
-      enemyVX[i] = -2;
-      nextEnemy[i] = enemyX[i];
-    }
-    enemyX[i] = nextEnemy[i];
   }
 }
 
@@ -248,9 +256,8 @@ void drawBackground() {
   // (map.widthPixel), i.e. screenLeftX=map.widthPixel()/2-width/2. Then we want
   // the center of the background image (backgroundImg.width/2) also correspond to the screen
   // center (width/2), i.e. x=-backgroundImg.width/2+width/2.
-  //float x = map (screenLeftX, map.widthPixel()/2-width/2, -backgroundImg.width/2+width/2, -0.5);
-  ////float y = map (screenTopY, map.heightPixel()/2-height/2, -backgroundImg.height/2+height/2, -0.5);
-  //image (backgroundImg, x, y);
+  float x = map (screenLeftX, map.widthPixel()/2-width/2, -backgroundImg.width/2+width/2, -0.5);
+  float y = map (screenTopY, map.heightPixel()/2-height/2, -backgroundImg.height/2+height/2, -0.5);
   background(0);
 }
 
@@ -259,7 +266,7 @@ void drawMap() {
   // The left border of the screen is at screenLeftX in map coordinates
   // so we draw the left border of the map at -screenLeftX in screen coordinates
   // Same for screenTopY.
-  map.draw( 0, 0 );
+  map.draw( -screenLeftX, -screenTopY );
 }
 
 
@@ -268,10 +275,8 @@ void drawPlayer() {
   noStroke();
   //fill(0, 255, 255);
   imageMode(CENTER);
-  image(playerImgs.get(playerPhase), playerX, playerY); // depict the player
-  //fill(gC);
-
-  ellipse( playerX - screenLeftX, playerY - screenTopY, 2*playerR, 2*playerR );
+  image(playerImgs.get(playerPhase), playerX- screenLeftX, playerY - screenTopY); // depict the player
+  fill(gC);
 
   // understanding this is optional, skip at first sight
   if (showSpecialFunctions) {
@@ -298,10 +303,10 @@ void draw() {
     updatePlayer();
     updateEnemy();
     movePlayer();
-    for (int i=0; i<greyMans.size(); i++) {
-     greyMans.get(i).moveEnemy();
+    //let the enemys move
+    for (int i=0; i<enemys.size(); i++) {
+      enemys.get(i).moveEnemy(gY[i], gY[i]);
     }
-
     time+=1/frameRate;
   } else if (keyPressed && key==' ') {
     if (gameState==GAMEWAIT) gameState=GAMERUNNING;
@@ -313,49 +318,22 @@ void draw() {
   drawBackground();
   drawMap();
   drawPlayer();
-
-
-//  //has to be in a loop with an array to draw several enemies?
- for (int i=0; i<greyMans.size(); i++) {
-   greyMans.get(i).drawEnemy();
- }
-
-
-
-
   drawText();
+ //draw the enemies
+  for (int i=0; i<enemys.size(); i++) {
+    enemys.get(i).drawEnemy(gX[i], gY[i], gDiameter);
+  }
 
   //win when 3 flowers collected
   if (counter==3) gameState=GAMEWON;
   //lose when collision with enemy
+ 
+ drawClock();
 
-
-
-  // clock
-  //big pointer
-  pushMatrix();
-  translate(width/2, height/2-25);
-  rotate(radians(cS));
-  stroke(0);
-  strokeWeight(2);
-  line(0, 0, 0, -35);
-  noStroke();
-  popMatrix();
-  //small pointer
-  pushMatrix();
-  translate(width/2, height/2-25);
-  rotate(radians(cS/12));
-  stroke(0);
-  strokeWeight(4);
-  line(0, 0, 0, -20);
-  noStroke();
-  popMatrix(); 
-
-  cS+=6/frameRate;
-
-  ////turn the clock the other way round when collision player and enemy
-  for (int i=0; i<3; i++) {
-   if (dist(playerX, playerY, enemyX[i], enemyY[i])<gDiameter)  cS-=3;
+ 
+//let the enemy hunt the player when no wall is between them
+  for (int i = 0; i < enemys.size(); i++) {
+    if (!map.testTileOnLine (playerX, playerY, gX[i], gY[i], "W")) gX[i]=lerp(playerX, gX[i], 0.95);
   }
 
   if (cS<=0) gameState=GAMEOVER ;

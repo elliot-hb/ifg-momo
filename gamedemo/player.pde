@@ -53,7 +53,7 @@ void movePlayer() {
   //}
 
   if (keyPressed && keyCode==UP &&  playerVY==0) {
-    playerVY=-6;
+    playerVY=-6; //height of jumps
   }
 
 
@@ -88,9 +88,10 @@ void movePlayer() {
   }
   
   //collision with enemy
-    for (int i=0; i<3; i++) {
- if(dist(playerX, playerY, enemyX[i], enemyY[i])<gDiameter) playerPhase=9;
+  for (int i = 0; i < gX.length; i++) {
+  if (dist(playerX, playerY, gX[i], gY[i])<gDiameter)  playerPhase=9;
   }
+  
 }
 
 void keyReleased() {

@@ -1,29 +1,20 @@
-//has to be a class 
-class GreyMan {
-
+class Enemy {
+  
+  float enemyX;
+  float enemyY;
+  
   //constructor
-  GreyMan() {
-    gDiameter=28;
-    enemyX[0] = 200-screenLeftX;
-    enemyY[0] = 200 - screenTopY ;
+  Enemy(float _enemyX, float _enemyY) {
+    enemyX = _enemyX;
+    enemyY = _enemyY;
   }
 
-  GreyMan(float posX, float posY, float VX) {
-    gDiameter=28;
-    enemyX[0] = posX;
-    enemyY[0] = posY ;
-    enemyVX[0] = VX;
-  }
+void drawEnemy(float _enemyX, float _enemyY, float _gDiameter) {
+    ellipse(_enemyX-screenLeftX, _enemyY - screenTopY, _gDiameter, _gDiameter);
+}
 
-  void drawEnemy(/*here should be added arguments to indivdualize gX and gY for several enemies*/) {
-    for (int i=0; i<3; i++) {
-      ellipse(200-screenLeftX, 200 - screenTopY, gDiameter, gDiameter);
-    }
-  }
-  void moveEnemy() {
-    for (int i=0; i<3; i++) {
-      enemyVX[i] = 2;
-      enemyX[i]+=enemyVX[i];
-    }
-  }
+void moveEnemy(float _enemyX, float _enemyVX) {
+   _enemyX+=_enemyVX;
+}
+
 }
