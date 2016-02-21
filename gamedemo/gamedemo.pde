@@ -70,12 +70,12 @@ ArrayList<PImage> loadImages (String filePattern) {
   do {
     String fname = filePattern.replace(qmString, nf(ctr, qmString.length()));
     InputStream input = createInput(fname);
-    if (input==null) break; 
+    if (input==null) break;
     PImage img = loadImage (fname);
     if (img==null) break;
     images.add(img);
     ctr++;
-  } while (true); 
+  } while (true);
   return images;
 }
 
@@ -114,7 +114,7 @@ void newGame () {
   map = new Map( "demo.map");
   for ( int x = 0; x < map.w; ++x ) {
     for ( int y = 0; y < map.h; ++y ) {
-      // put player at 'S' tile and replace with 'F'  
+      // put player at 'S' tile and replace with 'F'
       if ( map.at(x, y) == 'S' ) {
         playerX = map.centerXOfTile (x);
         playerY= map.centerYOfTile (y);
@@ -214,7 +214,7 @@ void drawBackground() {
 }
 
 
-void drawMap() {   
+void drawMap() {
   // The left border of the screen is at screenLeftX in map coordinates
   // so we draw the left border of the map at -screenLeftX in screen coordinates
   // Same for screenTopY.
@@ -232,18 +232,18 @@ void drawPlayer() {
 
   // understanding this is optional, skip at first sight
   if (showSpecialFunctions) {
-    // draw a line to the next hole   
+    // draw a line to the next hole
     Map.TileReference nextHole = map.findClosestTileInRect (playerX-100, playerY-100, 200, 200, "H");
     stroke(255, 0, 255);
-    if (nextHole!=null) line (playerX-screenLeftX, playerY-screenTopY, 
+    if (nextHole!=null) line (playerX-screenLeftX, playerY-screenTopY,
       nextHole.centerX-screenLeftX, nextHole.centerY-screenTopY);
   }
 }
 
-void drawText() { 
+void drawText() {
   textAlign(CENTER, CENTER);
-  fill(0, 255, 0);  
-  textSize(40);  
+  fill(0, 255, 0);
+  textSize(40);
   if (gameState==GAMEWAIT) text ("collect 3 flowers, press space to start", width/2, height/2);
   else if (gameState==GAMEOVER) text ("game over", width/2, height/2);
   else if (gameState==GAMEWON) text ("won in "+ round(time) + " seconds", width/2, height/2);
@@ -254,7 +254,7 @@ void draw() {
   if (gameState==GAMERUNNING) {
     updatePlayer();
     updateEnemy();
-    //movePlayer();
+    movePlayer();
     //let the enemys move
     for (int i=0; i<enemys.size(); i++) {
       enemys.get(i).moveEnemy(gY[i], gY[i]);
@@ -266,7 +266,7 @@ void draw() {
   }
   //horizontal scrolling
   screenLeftX = playerX - width/2;
- 
+
   //use the following if you want no vertical scrolling:
   //screenTopY  = (map.heightPixel() - height)/2;
 

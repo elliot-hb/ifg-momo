@@ -1,6 +1,6 @@
 void drawClock() {
   //draw big pointer
-  //set clock position from the data achieved 
+  //set clock position from the data achieved
   float clockX, clockY;
   clockX=clockPosX-screenLeftX+49;
   clockY=clockPosY-screenTopY+49;
@@ -21,7 +21,7 @@ void drawClock() {
   strokeWeight(4);
   line(0, 0, 0, -40);
   noStroke();
-  popMatrix(); 
+  popMatrix();
 
   if (gameState==GAMERUNNING) clockDeg+=6/frameRate;
 
