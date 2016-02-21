@@ -40,7 +40,7 @@ void movePlayer() {
 
 
   if (keyPressed && keyCode==UP &&  playerVY==0) {
-    playerVY=-6; //height of jumps
+    playerVY=-10; //height of jumps
   }
 
 

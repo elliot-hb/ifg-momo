@@ -91,7 +91,7 @@ ArrayList <Enemy> enemys=new ArrayList<Enemy>();
 void setup() {
   smooth();
   size( 1000, 780 );
-  backgroundImg = loadImage ("images/background.png"); // load the backgroundimage
+  backgroundImg = loadImage ("images/background.jpg"); // load the backgroundimage
   playerImgs=loadImages("images/player-??.png");
 
 
@@ -144,72 +144,6 @@ void newGame () {
   gameState = GAMEWAIT;
 }
 
-void updatePlayer() {
-  // update player
-  gravity=0.5;
-  float nextX = playerX + playerVX, 
-    nextY = playerY + playerVY;
-
-  //collision bottom-half of player with top of walls
-  if ( map.testTileInRect(nextX-playerW, nextY, 2*playerW, playerW, "W" )) {
-    playerVX = 0;
-    playerVY = 0;
-    nextX = playerX;
-    nextY = playerY;
-    gravity=0;
-  }
-
-  //debugging part if hanging with the butt in the wall
-  if (keyPressed && keyCode == UP  && map.testTileInRect(nextX-playerW, nextY, 2*playerW, playerW, "W" )) {
-    playerY= playerY-5;
-    playerVX = 0;
-    playerVY = 0;
-    nextX = playerX;
-    nextY = playerY;
-    gravity=0;
-  }
-
-  //collision upper-half of player with bottom of walls
-  if ( map.testTileInRect( nextX-playerW, nextY-playerW, 2*playerW, playerW, "W" )) {
-    playerY = playerY+1;
-    playerVX = -playerVX;
-    playerVY = -playerVY;
-    nextX = playerX;
-    nextY = playerY;
-    gravity=0;
-  }
-
-  //collision left-upper-corner of player with left side of walls
-  if ( map.testTileInRect(nextX-playerW, nextY-playerW, playerW, playerW, "W" )) {
-    playerX = playerX+10;
-    playerVX = -playerVX;
-    playerVY = -playerVY;
-    nextX = playerX;
-    nextY = playerY;
-    gravity=0;
-  }
-
-  //collision right-upper-corner of player with right side of walls
-  if ( map.testTileInRect(nextX, nextY-playerW, playerW, playerW, "W" )) {
-    playerX = playerX-10;
-    playerVX = -playerVX;
-    playerVY = -playerVY;
-    nextX = playerX;
-    nextY = playerY;
-    gravity=0;
-  }
-
-  //collect flowers
-  Map.TileReference tile =map.findTileInRect(nextX-playerW, nextY-playerW, 2*playerW, 2*playerW, "P");
-  if (tile!=null) {
-    //levitationTimer=5;
-    map.set(tile.x, tile.y, 'F');
-    counter+=1;
-  }
-
-  playerX = nextX;
-  playerY = nextY;
-}
 
 // Maps x to an output y = map(x,xRef,yRef,factor), such that
 //     - x0 is mapped to y0
@@ -276,6 +210,7 @@ void drawBackground() {
   float x = map (screenLeftX, map.widthPixel()/2-width/2, -backgroundImg.width/2+width/2, -0.5);
   float y = map (screenTopY, map.heightPixel()/2-height/2, -backgroundImg.height/2+height/2, -0.5);
   background(0);
+//image (backgroundImg, x+1000, y+400);
 }
 
 
@@ -319,7 +254,7 @@ void draw() {
   if (gameState==GAMERUNNING) {
     updatePlayer();
     updateEnemy();
-    movePlayer();
+    //movePlayer();
     //let the enemys move
     for (int i=0; i<enemys.size(); i++) {
       enemys.get(i).moveEnemy(gY[i], gY[i]);
@@ -331,18 +266,19 @@ void draw() {
   }
   //horizontal scrolling
   screenLeftX = playerX - width/2;
-
+ 
   //use the following if you want no vertical scrolling:
   //screenTopY  = (map.heightPixel() - height)/2;
 
   //use the following if you want vertical scrolling:
   screenTopY = playerY - height/2;
 
-  drawBackground();
+ drawBackground();
   drawMap();
   drawPlayer();
   drawClock();
   drawText();
+
 
   //draw the enemies
   for (int i=0; i<enemys.size(); i++) {
@@ -359,9 +295,10 @@ void draw() {
     if (!map.testTileOnLine (playerX-playerW, playerY, gX[i]+gDiameter/2, gY[i], "W") || !map.testTileOnLine (playerX-playerW, playerY, gX[i]-gDiameter/2, gY[i], "W")) gX[i]=lerp(playerX, gX[i], huntingSpeed);
   }
 
-  if (clockDeg<0 || clockDeg>360) gameState=GAMEOVER ;
+  //  if (clockDeg<0 || clockDeg>360) gameState=GAMEOVER ;
 
   clockSecs=int(clockDeg)/6;
   //  println("time passed: "+clockSecs);
   println("playerPhase= "+playerPhase);
+  println("frameRate= "+frameRate);
 }
