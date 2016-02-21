@@ -1,4 +1,5 @@
 void movePlayer() {
+
   playerVX+=playeraX;
   playerX+=playerVX;
 
@@ -30,27 +31,13 @@ void movePlayer() {
     if (playerVX<0 && playeraX==0) {
       playeraX=-1; // slow stop
     } else {
-      playeraX=2; // accelate speed
+      playeraX=2; // accelerate speed
     }
   }
-
-  // constrain the field of player
-  //if (playerX<screenLeftX) {
-  //  playerX=25;
-  //  playerVX=0;
-  //} else if (playerX>width-25) {
-  //  playerX=width-25;
-  //  playerVX=0;
-  //}
 
   playerVY+=gravity*1.3;
   playerY+=playerVY;
 
-  // constrain y-playeraXis field of player
-  //if (playerY>floorHeight-25) {
-  //playerY=floorHeight-25;
-  //playerVY=0;
-  //}
 
   if (keyPressed && keyCode==UP &&  playerVY==0) {
     playerVY=-6; //height of jumps
@@ -58,40 +45,67 @@ void movePlayer() {
 
 
 
+  println("animCount= "+animCount);
+  println("playerVX= "+playerVX);
+
   // dipict player
+  //player moves to the right
   if (playerVX>0 && playerVY==0 ) {
     playerPhase=1;
+    animCount++;
+    if (animCount >10 && animCount <20)
+      playerPhase=2;
+    if (animCount >20 && animCount <30)
+      playerPhase=1;
+    if (animCount >30 && animCount <40)
+      playerPhase=3;
+    if (animCount >40)
+      animCount =0;
+
+    //player moves to the left
   } else if (playerVX<0 && playerVY==0) {
-    playerPhase=2;
-  }
-
-  if (playerVX==0 && playeraX==0 && playerVY<0 ) {
-    playerPhase=3;
-  } else if (playerVX==0 && playeraX==0 && playerVY>0) {
     playerPhase=4;
+    animCount++;
+    if (animCount >10 && animCount <20)
+      playerPhase=5;
+    if (animCount >20)
+      animCount =0;
   }
 
+  //player is jumping up
+  if (playerVX==0 && playeraX==0 && playerVY<0 ) {
+    playerPhase=8;
+  } else if (playerVX==0 && playeraX==0 && playerVY>0) {
+    playerPhase=8;
+  }
+
+  //player is jumping up to the right
   if (playerVX>0 && playerVY<0 ) {
-    playerPhase=5;
+    playerPhase=7;
+
+    //player is jumping down to the left
   } else if (playerVX<0 && playerVY>0) {
     playerPhase=6;
   }
 
+  //player is jumping down to the right
   if (playerVX>0 && playerVY>0 ) {
     playerPhase=7;
+
+    //player is jumping up the left
   } else if (playerVX<0 && playerVY<0) {
-    playerPhase=8;
+    playerPhase=6;
   }
 
   if (!keyPressed && playerVX==0 && playeraX==0 && playerVY==0) {
     playerPhase=0;
   }
-  
+
+
   //collision with enemy
   for (int i = 0; i < gX.length; i++) {
-  if (dist(playerX, playerY, gX[i], gY[i])<gDiameter)  playerPhase=9;
+    if (dist(playerX, playerY, gX[i], gY[i])<gDiameter)  playerPhase=9;
   }
-  
 }
 
 void keyReleased() {
