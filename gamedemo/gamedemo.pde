@@ -1,11 +1,6 @@
 Map map;
-//// Position of player center in level coordinates
-//float playerX, playerY;
-//// Velocity of player
-//float playerVX, playerVY;
-//// Speed at which the player moves
-//float playerSpeed = 150;
-//// The player is a circle and this is its radius
+
+// The player is a circle and this is its radius
 float playerR = 28;
 
 float playerX; // position of playerX
@@ -21,11 +16,14 @@ float playeraX; //acceleration along x-axis
 float gravity=0.5; // define gravity
 float floorHeight;
 
-float gX; //enemyX
-float gVX = -2; //enemy velocity on x axis
-float gY; //enemyY
-int gDiameter=28; //enemy diameter
-color gC; // enemy color
+float [] gX;  //position of enemy on x axis
+float [] gVX; //enemy velocity on x axis
+float [] gY; //position of enemy on y axis
+char [] enemyStartTileName = {'X', 'Y', 'Z'}; //list of the names of the tiles where enemies appear, add more tilenames, to get more enemies, but also increase the numOfEnemies then!
+int numOfEnemies = 3; //numberOfEnemies
+int gDiameter=28; //enemy diamete
+float huntingSpeed = 0.95; //increasing this will let the enemy hunt the player faster
+color gC;
 
 //counts the flowers, to set when win
 int counter;
@@ -77,21 +75,28 @@ ArrayList<PImage> playerImgs;
 int playerPhase;
 //////////////////////////////////////////////
 
-//Enemy Grey man, define the ArrayList
+//define the ArrayList of the enemys
+ArrayList <Enemy> enemys=new ArrayList<Enemy>();
 
 void setup() {
   size( 1000, 780 );
   backgroundImg = loadImage ("images/background.png"); // load the backgroundimage
   playerImgs=loadImages("images/player-??.png");
-  //floorHeight=height;
+
+
+  //set size of the enemy arrays
+  gX = new float[numOfEnemies];
+  gY = new float[numOfEnemies];
+  gVX = new float[numOfEnemies];
+
+  //add enemies as long as the length of gX isn't reached
+  for (int i = 0; i<gX.length; i++) {
+    enemys.add(new Enemy(gX[i], gY[i]));
+    //let the enemies walk in -2 steps on x-axis at the beginning
+    gVX[i] = -2;
+  }
 
   newGame ();
-
-
-  //// instantiation of the ArrayList of the enemy
-  //for (int i=0; i<3; i++) {
-  //  greyMans.add(new GreyMan(random(width/2+100, width), floorHeight-20, 40, color(100)));
-  //}
 }
 
 void newGame () {
@@ -105,34 +110,24 @@ void newGame () {
         map.set(x, y, 'F');
       }
 
-      if ( map.at(x, y) == 'H' ) {
-        gX = map.centerXOfTile (x);
-        gY = map.centerYOfTile (y);
-        map.set(x, y, 'F');
+      //put all enemies on the map on the tiles with a tilename on the array enemyStartTileName, replace those tiles with 'F'
+      for (int i = 0; i<gX.length; i++) {
+        if ( map.at(x, y) == enemyStartTileName[i] ) {
+          gX[i] = map.centerXOfTile (x);
+          gY[i] = map.centerYOfTile (y);
+          map.set(x, y, 'F');
+        }
       }
     }
   }
   time=0;
   counter=0;
-  //playerX=0;
+  cS=0;
   playerVX = 0;
   playerVY = 0;
   gravity=0;
   gameState = GAMEWAIT;
 }
-
-//void keyPressed() {
-//  if ( keyCode == UP) {
-//    playerVY=-200.0;
-//  }
-//  if ( keyCode == LEFT ) {
-//    playerVX = -playerSpeed;
-//  }
-//  if ( keyCode == RIGHT ) {
-//    playerVX = playerSpeed;
-//  } else if ( keyCode == 'S' ) showSpecialFunctions = !showSpecialFunctions;
-//}
-
 
 void updatePlayer() {
   // update player
@@ -189,14 +184,13 @@ void updatePlayer() {
     gravity=0;
   }
 
-Map.TileReference tile =map.findTileInRect(nextX-playerR, nextY-playerR, 2*playerR, 2*playerR, "P");
-if (tile!=null) {
-  //levitationTimer=5;
-  map.set(tile.x, tile.y, 'F');
-  counter+=1;
-}
-
-
+  //collect flowers
+  Map.TileReference tile =map.findTileInRect(nextX-playerR, nextY-playerR, 2*playerR, 2*playerR, "P");
+  if (tile!=null) {
+    //levitationTimer=5;
+    map.set(tile.x, tile.y, 'F');
+    counter+=1;
+  }
 
   playerX = nextX;
   playerY = nextY;
@@ -210,22 +204,49 @@ float map (float x, float xRef, float yRef, float factor) {
 }
 
 void updateEnemy() {
-    float nextgX = gX + gVX;
 
-  //collision left-upper-corner of enemy with left side of walls
-  if ( map.testTileInRect(nextgX-14, gY-14, gDiameter/2, gDiameter, "W" )) {
-    gVX = 2;
-    nextgX = gX;
+  float [] nextgX;
+  nextgX = new float[numOfEnemies];
+
+  for (int i = 0; i<nextgX.length; i++) {
+
+    nextgX[i] = gX[i]+ gVX[i];
+
+
+    // do the following only when wall is between player and enemy (let the enemies walk up and down on x-axis, while not seeing the player)
+    if (map.testTileOnLine (playerX, playerY, gX[i], gY[i], "W")) {
+
+      //collision left-upper-corner of enemy with left side of walls
+      if ( map.testTileInRect(nextgX[i]-gDiameter/2, gY[i]-14, gDiameter/2, gDiameter, "W" )) {
+        gVX[i] = -gVX[i];
+        nextgX[i] = gX[i];
+      }
+
+      //collision right-upper-corner of player with right side of walls
+      if ( map.testTileInRect(nextgX[i], gY[i]-gDiameter/2, gDiameter/2, gDiameter, "W" )) {
+        gVX[i] = -gVX[i];
+        nextgX[i] = gX[i];
+      }
+
+      //debugging for modus after hunting player
+      if ( map.testTileFullyInsideRect(nextgX[i]-gDiameter, gY[i]-gDiameter/2, gDiameter/2, gDiameter, "W" )) {
+        gX[i] += 1;
+        gVX[i] = -gVX[i];
+        nextgX[i] = gX[i];
+      }
+
+      //debugging for modus after hunting player
+      if ( map.testTileFullyInsideRect(nextgX[i]+gDiameter/2, gY[i], gDiameter, gDiameter, "W" )) {
+        gX[i] -= 1;
+        gVX[i] = -gVX[i];
+        nextgX[i] = gX[i];
+      }
+
+
+
+      gX[i] = nextgX[i];
+    }
   }
-
-  //collision right-upper-corner of player with right side of walls
-  if ( map.testTileInRect(nextgX+14, gY-14, gDiameter/2, gDiameter, "W" )) {
-    gVX = -2;
-    nextgX = gX;
-  }
-
-
-  gX = nextgX;
 }
 
 
@@ -239,7 +260,7 @@ void drawBackground() {
   // center (width/2), i.e. x=-backgroundImg.width/2+width/2.
   float x = map (screenLeftX, map.widthPixel()/2-width/2, -backgroundImg.width/2+width/2, -0.5);
   float y = map (screenTopY, map.heightPixel()/2-height/2, -backgroundImg.height/2+height/2, -0.5);
-  image (backgroundImg, x, y);
+  background(0);
 }
 
 
@@ -258,9 +279,6 @@ void drawPlayer() {
   imageMode(CENTER);
   image(playerImgs.get(playerPhase), playerX- screenLeftX, playerY - screenTopY); // depict the player
   fill(gC);
-  ellipse(gX-screenLeftX, gY - screenTopY, gDiameter, gDiameter);
-
-  //ellipse( playerX - screenLeftX, playerY - screenTopY, 2*playerR, 2*playerR );
 
   // understanding this is optional, skip at first sight
   if (showSpecialFunctions) {
@@ -269,8 +287,7 @@ void drawPlayer() {
     stroke(255, 0, 255);
     if (nextHole!=null) line (playerX-screenLeftX, playerY-screenTopY, 
       nextHole.centerX-screenLeftX, nextHole.centerY-screenTopY);
-
-}
+  }
 }
 
 void drawText() { 
@@ -288,7 +305,10 @@ void draw() {
     updatePlayer();
     updateEnemy();
     movePlayer();
-  moveEnemy();
+    //let the enemys move
+    for (int i=0; i<enemys.size(); i++) {
+      enemys.get(i).moveEnemy(gY[i], gY[i]);
+    }
     time+=1/frameRate;
   } else if (keyPressed && key==' ') {
     if (gameState==GAMEWAIT) gameState=GAMERUNNING;
@@ -300,42 +320,26 @@ void draw() {
   drawBackground();
   drawMap();
   drawPlayer();
+  drawClock();
   drawText();
-  
+
+ //draw the enemies
+  for (int i=0; i<enemys.size(); i++) {
+    enemys.get(i).drawEnemy(gX[i], gY[i], gDiameter);
+  }
+
   //win when 3 flowers collected
   if (counter==3) gameState=GAMEWON;
   //lose when collision with enemy
  
-  
-  
- // clock
- //big pointer
-  pushMatrix();
-  translate(width/2-screenLeftX, height/2-25);
-  rotate(radians(cS));
-  stroke(0);
-  strokeWeight(2);
-  line(0, 0, 0, -35);
-  noStroke();
-  popMatrix();
-//small pointer
-  pushMatrix();
-  translate(width/2-screenLeftX, height/2-25);
-  rotate(radians(cS/12));
-  stroke(0);
-  strokeWeight(4);
-  line(0, 0, 0, -20);
-  noStroke();
-  popMatrix(); 
-  
-  cS+=6/frameRate;
-  
-  //turn the clock the other way round when collision player and enemy
- if(dist(playerX, playerY, gX, gY)<gDiameter)  cS-=3;
- 
- if (cS<=0) gameState=GAMEOVER ;
- 
- 
- println(cS);
-  
+
+//let the enemy hunt the player when no wall is between them
+  for (int i = 0; i < enemys.size(); i++) {
+    if (!map.testTileOnLine (playerX-playerR, playerY, gX[i]+gDiameter/2, gY[i], "W") || !map.testTileOnLine (playerX-playerR, playerY, gX[i]-gDiameter/2, gY[i], "W")) gX[i]=lerp(playerX, gX[i], huntingSpeed);
+  }
+
+  if (cS<0 || cS>360) gameState=GAMEOVER ;
+
+
+  println(cS);
 }
