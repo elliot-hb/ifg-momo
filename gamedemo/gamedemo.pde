@@ -29,6 +29,7 @@ float [] gX;  //position of enemy on x axis
 float [] gVX; //enemy velocity on x axis
 float [] gY; //position of enemy on y axis
 char [] enemyStartTileName = {'X', 'Y', 'Z'}; //list of the names of the tiles where enemies appear, add more tilenames, to get more enemies, but also increase the numOfEnemies then!
+String [] wallTileName = {"W", "V"}; //list of the tiles who should behave like a wall
 int numOfEnemies = 3; //numberOfEnemies
 int gDiameter=56; //enemy diamete
 float huntingSpeed = 0.95; //increasing this will let the enemy hunt the player faster
@@ -152,17 +153,26 @@ void updatePlayer() {
   float nextX = playerX + playerVX, 
     nextY = playerY + playerVY;
 
-  //collision bottom-half of player with top of walls
-  if ( map.testTileInRect(nextX-playerW/2, nextY, playerW/2, playerH/2, "W" )) {
+  for (int i = 0; i<wallTileName.length; i++) {
+  //collision lower-half of player with top of walls
+  if ( map.testTileInRect(nextX-playerW/2, nextY, playerW/2, playerH/2, wallTileName[i] )) {
     playerVX = 0;
     playerVY = 0;
     nextX = playerX;
     nextY = playerY;
     gravity=0;
   }
+  
+    //force the player to don't get in a tile
+  if ( map.testTileInRect(nextX-playerW/2, nextY-1, playerW/2, playerH/2, wallTileName[i]  )) {
+    playerY= playerY-1;
+    nextX = playerX;
+    nextY = playerY;
+    gravity=0;
+  }
 
   //debugging part if hanging with the butt in the wall
-  if (keyPressed && keyCode == UP  && map.testTileInRect(nextX-playerW/2, nextY, playerW, playerH/2, "W" )) {
+  if (keyPressed && keyCode == UP  && map.testTileInRect(nextX-playerW/2, nextY, playerW, playerH/2, wallTileName[i]  )) {
     playerY= playerY-5;
     playerVX = 0;
     playerVY = 0;
@@ -172,7 +182,7 @@ void updatePlayer() {
   }
 
   //collision upper-half of player with bottom of walls
-  if ( map.testTileInRect( nextX-playerW/2, nextY-playerH/2, playerW, playerH/2, "W" )) {
+  if ( map.testTileInRect( nextX-playerW/2, nextY-playerH/2, playerW, playerH/2, wallTileName[i]  )) {
     playerY = playerY+1;
     playerVX = -playerVX;
     playerVY = -playerVY;
@@ -182,7 +192,7 @@ void updatePlayer() {
   }
 
   //collision left-upper-corner of player with left side of walls
-  if ( map.testTileInRect(nextX-playerW/2, nextY-playerH/2, playerW/2, playerH/2, "W" )) {
+  if ( map.testTileInRect(nextX-playerW/2, nextY-playerH/2, playerW/2, playerH/2, wallTileName[i]  )) {
     playerX = playerX+10;
     playerVX = -playerVX;
     playerVY = -playerVY;
@@ -192,7 +202,7 @@ void updatePlayer() {
   }
 
   //collision right-upper-corner of player with right side of walls
-  if ( map.testTileInRect(nextX, nextY-playerH/2, playerW/2, playerH/2, "W" )) {
+  if ( map.testTileInRect(nextX, nextY-playerH/2, playerW/2, playerH/2, wallTileName[i]  )) {
     playerX = playerX-10;
     playerVX = -playerVX;
     playerVY = -playerVY;
@@ -200,6 +210,7 @@ void updatePlayer() {
     nextY = playerY;
     gravity=0;
   }
+}
 
   //collect flowers
   Map.TileReference tile =map.findTileInRect(nextX-playerW/2, nextY-playerH/2, playerW, playerH, "P");
