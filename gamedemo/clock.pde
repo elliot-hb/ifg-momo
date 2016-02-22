@@ -28,7 +28,7 @@ void drawClock() {
   //turn the clock the other way round when collision player and enemy
 
   for (int i = 0; i < gX.length; i++) {
-    if (dist(playerX, playerY, gX[i], gY[i])<gDiameter)  clockDeg-=3;
+    if (dist(playerX, playerY, gX[i], gY[i])<playerW)  clockDeg-=3;
   }
  // println("clockX= "+clockX);
  // println("clockY= "+clockY);
