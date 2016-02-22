@@ -90,7 +90,7 @@ ArrayList <Enemy> enemys=new ArrayList<Enemy>();
 
 void setup() {
   smooth();
-  size( 1000, 780 );
+  size( 1024, 700 );
   backgroundImg = loadImage ("images/background.png"); // load the backgroundimage
   playerImgs=loadImages("images/player-??.png");
 

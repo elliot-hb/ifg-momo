@@ -104,7 +104,7 @@ void movePlayer() {
 
   //collision with enemy
   for (int i = 0; i < gX.length; i++) {
-    if (dist(playerX, playerY, gX[i], gY[i])<gDiameter)  playerPhase=9;
+    if (dist(playerX, playerY, gX[i], gY[i])<playerW)  playerPhase=9;
   }
 }
 
