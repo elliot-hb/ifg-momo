@@ -1,17 +1,26 @@
 Map map;
 
-// The player is a circle and this is its radius
-float playerR = 28;
+//player with and height
+int playerW = 100;
+int playerH = 200;
+
 
 float playerX; // position of playerX
 float playerY; // position of playerY
-color pC; // color of player
+//color pC; // color of player
 
-float cS;
+float clockDeg;
+int clockSecs;
 
 float playerVX; //speed along x-axis
 float playerVY; //speed along y-axis
 float playeraX; //acceleration along x-axis
+
+//counter used for player animation;
+int animCount;
+
+float clockPosX; //Coordinates of Clock, that will be set during newGame() from position of tile 'A'
+float clockPosY; //
 
 float gravity=0.5; // define gravity
 float floorHeight;
@@ -21,9 +30,10 @@ float [] gVX; //enemy velocity on x axis
 float [] gY; //position of enemy on y axis
 char [] enemyStartTileName = {'X', 'Y', 'Z'}; //list of the names of the tiles where enemies appear, add more tilenames, to get more enemies, but also increase the numOfEnemies then!
 int numOfEnemies = 3; //numberOfEnemies
-int gDiameter=28; //enemy diamete
+int gDiameter=56; //enemy diamete
 float huntingSpeed = 0.95; //increasing this will let the enemy hunt the player faster
 color gC;
+
 
 //counts the flowers, to set when win
 int counter;
@@ -79,6 +89,7 @@ int playerPhase;
 ArrayList <Enemy> enemys=new ArrayList<Enemy>();
 
 void setup() {
+  smooth();
   size( 1000, 780 );
   backgroundImg = loadImage ("images/background.png"); // load the backgroundimage
   playerImgs=loadImages("images/player-??.png");
@@ -106,10 +117,9 @@ void newGame () {
       // put player at 'S' tile and replace with 'F'  
       if ( map.at(x, y) == 'S' ) {
         playerX = map.centerXOfTile (x);
-        playerY= map.centerYOfTile (y);
+        playerY= map.centerYOfTile (y)-50;
         map.set(x, y, 'F');
       }
-
       //put all enemies on the map on the tiles with a tilename on the array enemyStartTileName, replace those tiles with 'F'
       for (int i = 0; i<gX.length; i++) {
         if ( map.at(x, y) == enemyStartTileName[i] ) {
@@ -117,12 +127,17 @@ void newGame () {
           gY[i] = map.centerYOfTile (y);
           map.set(x, y, 'F');
         }
+        //search for first Clock tile and define clock Position
+        if ( map.at(x, y) == 'A' ) {
+          clockPosX= map.centerXOfTile (x);
+          clockPosY= map.centerYOfTile (y);
+        }
       }
     }
   }
   time=0;
   counter=0;
-  cS=0;
+  clockDeg=0;
   playerVX = 0;
   playerVY = 0;
   gravity=0;
@@ -136,7 +151,7 @@ void updatePlayer() {
     nextY = playerY + playerVY;
 
   //collision bottom-half of player with top of walls
-  if ( map.testTileInRect(nextX-playerR, nextY, 2*playerR, playerR, "W" )) {
+  if ( map.testTileInRect(nextX-playerW/2, nextY, playerW/2, playerH/2, "W" )) {
     playerVX = 0;
     playerVY = 0;
     nextX = playerX;
@@ -145,7 +160,7 @@ void updatePlayer() {
   }
 
   //debugging part if hanging with the butt in the wall
-  if (keyPressed && keyCode == UP  && map.testTileInRect(nextX-playerR, nextY, 2*playerR, playerR, "W" )) {
+  if (keyPressed && keyCode == UP  && map.testTileInRect(nextX-playerW/2, nextY, playerW, playerH/2, "W" )) {
     playerY= playerY-5;
     playerVX = 0;
     playerVY = 0;
@@ -155,7 +170,7 @@ void updatePlayer() {
   }
 
   //collision upper-half of player with bottom of walls
-  if ( map.testTileInRect( nextX-playerR, nextY-playerR, 2*playerR, playerR, "W" )) {
+  if ( map.testTileInRect( nextX-playerW/2, nextY-playerH/2, playerW, playerH/2, "W" )) {
     playerY = playerY+1;
     playerVX = -playerVX;
     playerVY = -playerVY;
@@ -165,7 +180,7 @@ void updatePlayer() {
   }
 
   //collision left-upper-corner of player with left side of walls
-  if ( map.testTileInRect(nextX-playerR, nextY-playerR, playerR, playerR, "W" )) {
+  if ( map.testTileInRect(nextX-playerW/2, nextY-playerH/2, playerW/2, playerH/2, "W" )) {
     playerX = playerX+10;
     playerVX = -playerVX;
     playerVY = -playerVY;
@@ -175,7 +190,7 @@ void updatePlayer() {
   }
 
   //collision right-upper-corner of player with right side of walls
-  if ( map.testTileInRect(nextX, nextY-playerR, playerR, playerR, "W" )) {
+  if ( map.testTileInRect(nextX, nextY-playerH/2, playerW/2, playerH/2, "W" )) {
     playerX = playerX-10;
     playerVX = -playerVX;
     playerVY = -playerVY;
@@ -185,11 +200,26 @@ void updatePlayer() {
   }
 
   //collect flowers
-  Map.TileReference tile =map.findTileInRect(nextX-playerR, nextY-playerR, 2*playerR, 2*playerR, "P");
+  Map.TileReference tile =map.findTileInRect(nextX-playerW/2, nextY-playerH/2, playerW, playerH, "P");
   if (tile!=null) {
     //levitationTimer=5;
     map.set(tile.x, tile.y, 'F');
     counter+=1;
+  }
+
+
+  //collect flowers
+  Map.TileReference beam =map.findTileInRect(nextX-playerW/2, nextY-playerH/2, playerW, playerH, "E");
+  if (beam!=null) {
+    for ( int x = 0; x < map.w; ++x ) {
+      for ( int y = 0; y < map.h; ++y ) {
+        // put player at 'S' tile and replace with 'F'  
+        if ( map.at(x, y) == 'T' ) {
+          nextX = map.centerXOfTile (x);
+          nextY= map.centerYOfTile (y)-50;
+        }
+      }
+    }
   }
 
   playerX = nextX;
@@ -214,7 +244,11 @@ void updateEnemy() {
 
 
     // do the following only when wall is between player and enemy (let the enemies walk up and down on x-axis, while not seeing the player)
-    if (map.testTileOnLine (playerX, playerY, gX[i], gY[i], "W")) {
+
+    if 
+      (map.testTileOnLine (playerX+playerW/2, playerY, gX[i], gY[i], "W") 
+      || map.testTileOnLine (playerX-playerW/2, playerY, gX[i], gY[i], "W")) 
+    {
 
       //collision left-upper-corner of enemy with left side of walls
       if ( map.testTileInRect(nextgX[i]-gDiameter/2, gY[i]-14, gDiameter/2, gDiameter, "W" )) {
@@ -314,8 +348,14 @@ void draw() {
     if (gameState==GAMEWAIT) gameState=GAMERUNNING;
     else if (gameState==GAMEOVER || gameState==GAMEWON) newGame();
   }
+  //horizontal scrolling
   screenLeftX = playerX - width/2;
-  screenTopY  = (map.heightPixel() - height)/2;
+
+  //use the following if you want no vertical scrolling:
+  //screenTopY  = (map.heightPixel() - height)/2;
+
+  //use the following if you want vertical scrolling:
+  screenTopY = playerY - height/2;
 
   drawBackground();
   drawMap();
@@ -323,23 +363,34 @@ void draw() {
   drawClock();
   drawText();
 
- //draw the enemies
+  //draw the enemies
   for (int i=0; i<enemys.size(); i++) {
     enemys.get(i).drawEnemy(gX[i], gY[i], gDiameter);
   }
 
   //win when 3 flowers collected
-  if (counter==3) gameState=GAMEWON;
+  if (counter==2) gameState=GAMEWON;
   //lose when collision with enemy
- 
 
-//let the enemy hunt the player when no wall is between them
-  for (int i = 0; i < enemys.size(); i++) {
-    if (!map.testTileOnLine (playerX-playerR, playerY, gX[i]+gDiameter/2, gY[i], "W") || !map.testTileOnLine (playerX-playerR, playerY, gX[i]-gDiameter/2, gY[i], "W")) gX[i]=lerp(playerX, gX[i], huntingSpeed);
+
+  //let the enemy hunt the player when no wall is between them
+  for (int i = 0; i < enemys.size(); i++) { 
+    if 
+      (!map.testTileOnLine (playerX+playerW/2, playerY, gX[i], gY[i], "W")) 
+    { 
+      gX[i]=lerp(playerX+playerW, gX[i], huntingSpeed);
+    }
+
+    if 
+      (!map.testTileOnLine (playerX-playerW/2, playerY, gX[i], gY[i], "W")) 
+    { 
+      gX[i]=lerp(playerX-playerW, gX[i], huntingSpeed);
+    }
   }
 
-  if (cS<0 || cS>360) gameState=GAMEOVER ;
+  if (clockDeg<0 || clockDeg>360) gameState=GAMEOVER ;
 
-
-  println(cS);
+  clockSecs=int(clockDeg)/6;
+  //  println("time passed: "+clockSecs);
+  println("playerPhase= "+playerPhase);
 }
