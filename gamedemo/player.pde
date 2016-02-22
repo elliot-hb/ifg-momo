@@ -24,14 +24,14 @@ void movePlayer() {
     if (0<playerVX && playeraX==0) {
       playeraX=1; //slowly stop
     } else {
-      playeraX=-2; // accelate speed
+      playeraX=-5; // accelate speed
     }
   }
   if (keyPressed && keyCode==RIGHT ) {
     if (playerVX<0 && playeraX==0) {
       playeraX=-1; // slow stop
     } else {
-      playeraX=2; // accelerate speed
+      playeraX=5; // accelerate speed
     }
   }
 

@@ -208,12 +208,12 @@ void updatePlayer() {
   }
 
 
-  //collect flowers
+  //beam around
   Map.TileReference beam =map.findTileInRect(nextX-playerW/2, nextY-playerH/2, playerW, playerH, "E");
   if (beam!=null) {
     for ( int x = 0; x < map.w; ++x ) {
       for ( int y = 0; y < map.h; ++y ) {
-        // put player at 'S' tile and replace with 'F'  
+        // beam player to 'T' tile 
         if ( map.at(x, y) == 'T' ) {
           nextX = map.centerXOfTile (x);
           nextY= map.centerYOfTile (y)-50;
@@ -222,175 +222,193 @@ void updatePlayer() {
     }
   }
 
-  playerX = nextX;
-  playerY = nextY;
-}
-
-// Maps x to an output y = map(x,xRef,yRef,factor), such that
-//     - x0 is mapped to y0
-//     - increasing x by 1 increases y by factor
-float map (float x, float xRef, float yRef, float factor) {
-  return factor*(x-xRef)+yRef;
-}
-
-void updateEnemy() {
-
-  float [] nextgX;
-  nextgX = new float[numOfEnemies];
-
-  for (int i = 0; i<nextgX.length; i++) {
-
-    nextgX[i] = gX[i]+ gVX[i];
-
-
-    // do the following only when wall is between player and enemy (let the enemies walk up and down on x-axis, while not seeing the player)
-
-    if 
-      (map.testTileOnLine (playerX+playerW/2, playerY, gX[i], gY[i], "W") 
-      || map.testTileOnLine (playerX-playerW/2, playerY, gX[i], gY[i], "W")) 
-    {
-
-      //collision left-upper-corner of enemy with left side of walls
-      if ( map.testTileInRect(nextgX[i]-gDiameter/2, gY[i]-14, gDiameter/2, gDiameter, "W" )) {
-        gVX[i] = -gVX[i];
-        nextgX[i] = gX[i];
+    //function tile
+    Map.TileReference functionTile =map.findTileInRect(nextX-playerW/2, nextY-playerH/2, playerW, playerH, "M");
+    if (functionTile!=null) {
+      for ( int x = 0; x < map.w; ++x ) {
+        for ( int y = 0; y < map.h; ++y ) {
+          // let V walls disappear and replace it with floors 
+          if ( map.at(x, y) == 'V' ) {
+            map.set(x, y, 'F');
+          }
+          //let G floors disappear and replace it with walls 
+          if ( map.at(x, y) == 'G' ) {
+            map.set(x, y, 'W');
+          }
+        }
       }
+    }
+  
 
-      //collision right-upper-corner of player with right side of walls
-      if ( map.testTileInRect(nextgX[i], gY[i]-gDiameter/2, gDiameter/2, gDiameter, "W" )) {
-        gVX[i] = -gVX[i];
-        nextgX[i] = gX[i];
+    playerX = nextX;
+    playerY = nextY;
+  }
+
+  // Maps x to an output y = map(x,xRef,yRef,factor), such that
+  //     - x0 is mapped to y0
+  //     - increasing x by 1 increases y by factor
+  float map (float x, float xRef, float yRef, float factor) {
+    return factor*(x-xRef)+yRef;
+  }
+
+  void updateEnemy() {
+
+    float [] nextgX;
+    nextgX = new float[numOfEnemies];
+
+    for (int i = 0; i<nextgX.length; i++) {
+
+      nextgX[i] = gX[i]+ gVX[i];
+
+
+      // do the following only when wall is between player and enemy (let the enemies walk up and down on x-axis, while not seeing the player)
+
+      if 
+        (map.testTileOnLine (playerX+playerW/2, playerY, gX[i], gY[i], "W") 
+        || map.testTileOnLine (playerX-playerW/2, playerY, gX[i], gY[i], "W")) 
+      {
+
+        //collision left-upper-corner of enemy with left side of walls
+        if ( map.testTileInRect(nextgX[i]-gDiameter/2, gY[i]-14, gDiameter/2, gDiameter, "W" )) {
+          gVX[i] = -gVX[i];
+          nextgX[i] = gX[i];
+        }
+
+        //collision right-upper-corner of player with right side of walls
+        if ( map.testTileInRect(nextgX[i], gY[i]-gDiameter/2, gDiameter/2, gDiameter, "W" )) {
+          gVX[i] = -gVX[i];
+          nextgX[i] = gX[i];
+        }
+
+        //debugging for modus after hunting player
+        if ( map.testTileFullyInsideRect(nextgX[i]-gDiameter, gY[i]-gDiameter/2, gDiameter/2, gDiameter, "W" )) {
+          gX[i] += 1;
+          gVX[i] = -gVX[i];
+          nextgX[i] = gX[i];
+        }
+
+        //debugging for modus after hunting player
+        if ( map.testTileFullyInsideRect(nextgX[i]+gDiameter/2, gY[i], gDiameter, gDiameter, "W" )) {
+          gX[i] -= 1;
+          gVX[i] = -gVX[i];
+          nextgX[i] = gX[i];
+        }
+
+
+
+        gX[i] = nextgX[i];
       }
-
-      //debugging for modus after hunting player
-      if ( map.testTileFullyInsideRect(nextgX[i]-gDiameter, gY[i]-gDiameter/2, gDiameter/2, gDiameter, "W" )) {
-        gX[i] += 1;
-        gVX[i] = -gVX[i];
-        nextgX[i] = gX[i];
-      }
-
-      //debugging for modus after hunting player
-      if ( map.testTileFullyInsideRect(nextgX[i]+gDiameter/2, gY[i], gDiameter, gDiameter, "W" )) {
-        gX[i] -= 1;
-        gVX[i] = -gVX[i];
-        nextgX[i] = gX[i];
-      }
-
-
-
-      gX[i] = nextgX[i];
     }
   }
-}
 
 
-void drawBackground() {
-  // Explanation to the computation of x and y:
-  // If screenLeftX increases by 1, i.e. the main level moves 1 to the left on screen,
-  // we want the background map to move 0.5 to the left, i.e. x decrease by 0.5
-  // Further, imagine the center of the screen (width/2) corresponds to the center of the level
-  // (map.widthPixel), i.e. screenLeftX=map.widthPixel()/2-width/2. Then we want
-  // the center of the background image (backgroundImg.width/2) also correspond to the screen
-  // center (width/2), i.e. x=-backgroundImg.width/2+width/2.
-  float x = map (screenLeftX, map.widthPixel()/2-width/2, -backgroundImg.width/2+width/2, -0.5);
-  float y = map (screenTopY, map.heightPixel()/2-height/2, -backgroundImg.height/2+height/2, -0.5);
-  background(0);
-}
-
-
-void drawMap() {   
-  // The left border of the screen is at screenLeftX in map coordinates
-  // so we draw the left border of the map at -screenLeftX in screen coordinates
-  // Same for screenTopY.
-  map.draw( -screenLeftX, -screenTopY );
-}
-
-
-void drawPlayer() {
-  // draw player
-  noStroke();
-  //fill(0, 255, 255);
-  imageMode(CENTER);
-  image(playerImgs.get(playerPhase), playerX- screenLeftX, playerY - screenTopY); // depict the player
-  fill(gC);
-
-  // understanding this is optional, skip at first sight
-  if (showSpecialFunctions) {
-    // draw a line to the next hole   
-    Map.TileReference nextHole = map.findClosestTileInRect (playerX-100, playerY-100, 200, 200, "H");
-    stroke(255, 0, 255);
-    if (nextHole!=null) line (playerX-screenLeftX, playerY-screenTopY, 
-      nextHole.centerX-screenLeftX, nextHole.centerY-screenTopY);
+  void drawBackground() {
+    // Explanation to the computation of x and y:
+    // If screenLeftX increases by 1, i.e. the main level moves 1 to the left on screen,
+    // we want the background map to move 0.5 to the left, i.e. x decrease by 0.5
+    // Further, imagine the center of the screen (width/2) corresponds to the center of the level
+    // (map.widthPixel), i.e. screenLeftX=map.widthPixel()/2-width/2. Then we want
+    // the center of the background image (backgroundImg.width/2) also correspond to the screen
+    // center (width/2), i.e. x=-backgroundImg.width/2+width/2.
+    float x = map (screenLeftX, map.widthPixel()/2-width/2, -backgroundImg.width/2+width/2, -0.5);
+    float y = map (screenTopY, map.heightPixel()/2-height/2, -backgroundImg.height/2+height/2, -0.5);
+    //image (backgroundImg, x, y);
+    background(0);
   }
-}
 
-void drawText() { 
-  textAlign(CENTER, CENTER);
-  fill(0, 255, 0);  
-  textSize(40);  
-  if (gameState==GAMEWAIT) text ("collect 3 flowers, press space to start", width/2, height/2);
-  else if (gameState==GAMEOVER) text ("game over", width/2, height/2);
-  else if (gameState==GAMEWON) text ("won in "+ round(time) + " seconds", width/2, height/2);
-}
+  void drawMap() {   
+    // The left border of the screen is at screenLeftX in map coordinates
+    // so we draw the left border of the map at -screenLeftX in screen coordinates
+    // Same for screenTopY.
+    map.draw( -screenLeftX, -screenTopY );
+  }
 
 
-void draw() {
-  if (gameState==GAMERUNNING) {
-    updatePlayer();
-    updateEnemy();
-    movePlayer();
-    //let the enemys move
+  void drawPlayer() {
+    // draw player
+    noStroke();
+    //fill(0, 255, 255);
+    imageMode(CENTER);
+    image(playerImgs.get(playerPhase), playerX- screenLeftX, playerY - screenTopY); // depict the player
+    fill(gC);
+
+    // understanding this is optional, skip at first sight
+    if (showSpecialFunctions) {
+      // draw a line to the next hole   
+      Map.TileReference nextHole = map.findClosestTileInRect (playerX-100, playerY-100, 200, 200, "H");
+      stroke(255, 0, 255);
+      if (nextHole!=null) line (playerX-screenLeftX, playerY-screenTopY, 
+        nextHole.centerX-screenLeftX, nextHole.centerY-screenTopY);
+    }
+  }
+
+  void drawText() { 
+    textAlign(CENTER, CENTER);
+    fill(0, 255, 0);  
+    textSize(40);  
+    if (gameState==GAMEWAIT) text ("collect 3 flowers, press space to start", width/2, height/2);
+    else if (gameState==GAMEOVER) text ("game over", width/2, height/2);
+    else if (gameState==GAMEWON) text ("won in "+ round(time) + " seconds", width/2, height/2);
+  }
+
+
+  void draw() {
+    if (gameState==GAMERUNNING) {
+      updatePlayer();
+      updateEnemy();
+      movePlayer();
+      //let the enemys move
+      for (int i=0; i<enemys.size(); i++) {
+        enemys.get(i).moveEnemy(gY[i], gY[i]);
+      }
+      time+=1/frameRate;
+    } else if (keyPressed && key==' ') {
+      if (gameState==GAMEWAIT) gameState=GAMERUNNING;
+      else if (gameState==GAMEOVER || gameState==GAMEWON) newGame();
+    }
+    //horizontal scrolling
+    screenLeftX = playerX - width/2;
+
+    //use the following if you want no vertical scrolling:
+    //screenTopY  = (map.heightPixel() - height)/2;
+
+    //use the following if you want vertical scrolling:
+    screenTopY = playerY - height/2;
+
+    drawBackground();
+    drawMap();
+    drawPlayer();
+    drawClock();
+    drawText();
+
+    //draw the enemies
     for (int i=0; i<enemys.size(); i++) {
-      enemys.get(i).moveEnemy(gY[i], gY[i]);
-    }
-    time+=1/frameRate;
-  } else if (keyPressed && key==' ') {
-    if (gameState==GAMEWAIT) gameState=GAMERUNNING;
-    else if (gameState==GAMEOVER || gameState==GAMEWON) newGame();
-  }
-  //horizontal scrolling
-  screenLeftX = playerX - width/2;
-
-  //use the following if you want no vertical scrolling:
-  //screenTopY  = (map.heightPixel() - height)/2;
-
-  //use the following if you want vertical scrolling:
-  screenTopY = playerY - height/2;
-
-  drawBackground();
-  drawMap();
-  drawPlayer();
-  drawClock();
-  drawText();
-
-  //draw the enemies
-  for (int i=0; i<enemys.size(); i++) {
-    enemys.get(i).drawEnemy(gX[i], gY[i], gDiameter);
-  }
-
-  //win when 3 flowers collected
-  if (counter==2) gameState=GAMEWON;
-  //lose when collision with enemy
-
-
-  //let the enemy hunt the player when no wall is between them
-  for (int i = 0; i < enemys.size(); i++) { 
-    if 
-      (!map.testTileOnLine (playerX+playerW/2, playerY, gX[i], gY[i], "W")) 
-    { 
-      gX[i]=lerp(playerX+playerW, gX[i], huntingSpeed);
+      enemys.get(i).drawEnemy(gX[i], gY[i], gDiameter);
     }
 
-    if 
-      (!map.testTileOnLine (playerX-playerW/2, playerY, gX[i], gY[i], "W")) 
-    { 
-      gX[i]=lerp(playerX-playerW, gX[i], huntingSpeed);
+    //win when x flowers collected
+    if (counter==2) gameState=GAMEWON;
+    //lose when collision with enemy
+
+
+    //let the enemy hunt the player when no wall is between them
+    for (int i = 0; i < enemys.size(); i++) { 
+      if 
+        (!map.testTileOnLine (playerX+playerW/2, playerY, gX[i], gY[i], "W")) 
+      { 
+        gX[i]=lerp(playerX+playerW, gX[i], huntingSpeed);
+      }
+
+      if 
+        (!map.testTileOnLine (playerX-playerW/2, playerY, gX[i], gY[i], "W")) 
+      { 
+        gX[i]=lerp(playerX-playerW, gX[i], huntingSpeed);
+      }
     }
+
+    if (clockDeg<0 || clockDeg>360) gameState=GAMEOVER ;
+
+    clockSecs=int(clockDeg)/6;
+    //  println("time passed: "+clockSecs);
+    println("playerPhase= "+playerPhase);
   }
-
-  if (clockDeg<0 || clockDeg>360) gameState=GAMEOVER ;
-
-  clockSecs=int(clockDeg)/6;
-  //  println("time passed: "+clockSecs);
-  println("playerPhase= "+playerPhase);
-}
