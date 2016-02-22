@@ -264,8 +264,8 @@ void updatePlayer() {
       // do the following only when wall is between player and enemy (let the enemies walk up and down on x-axis, while not seeing the player)
 
       if 
-        (map.testTileOnLine (playerX+playerW/2, playerY, gX[i], gY[i], "W") 
-        || map.testTileOnLine (playerX-playerW/2, playerY, gX[i], gY[i], "W")) 
+        (map.testTileOnLine (playerX+playerW/2, playerY+playerH/2, gX[i], gY[i], "W") 
+        || map.testTileOnLine (playerX-playerW/2, playerY+playerH/2, gX[i], gY[i], "W")) 
       {
 
         //collision left-upper-corner of enemy with left side of walls
@@ -394,13 +394,13 @@ void updatePlayer() {
     //let the enemy hunt the player when no wall is between them
     for (int i = 0; i < enemys.size(); i++) { 
       if 
-        (!map.testTileOnLine (playerX+playerW/2, playerY, gX[i], gY[i], "W")) 
+        (!map.testTileOnLine (playerX+playerW/2, playerY+playerH/2, gX[i], gY[i], "W")) 
       { 
         gX[i]=lerp(playerX+playerW, gX[i], huntingSpeed);
       }
 
       if 
-        (!map.testTileOnLine (playerX-playerW/2, playerY, gX[i], gY[i], "W")) 
+        (!map.testTileOnLine (playerX-playerW/2, playerY+playerH/2, gX[i], gY[i], "W")) 
       { 
         gX[i]=lerp(playerX-playerW, gX[i], huntingSpeed);
       }
