@@ -46,10 +46,11 @@ boolean showSpecialFunctions=false;
 float screenLeftX, screenTopY;
 
 float time;
-int GAMEWAIT=0, GAMERUNNING=1, GAMEOVER=2, GAMEWON=3;
+int GAMEWAIT=0, GAMERUNNING=1, GAMEOVER_STOLEN_TIME=2, GAMEOVER_TIMEOUT=3, GAMEWON=4;
 int gameState;
 
 PImage backgroundImg;
+PImage gameover;
 PImage P;
 
 ////declare classes
@@ -92,6 +93,7 @@ void setup() {
   smooth();
   size( 1024, 700 );
   backgroundImg = loadImage ("images/background.png"); // load the backgroundimage
+  gameover = loadImage("images/gameover.jpg"); // load the gameoverimage
   playerImgs=loadImages("images/player-??.png");
 
 
@@ -347,7 +349,14 @@ void updatePlayer() {
     fill(0, 255, 0);  
     textSize(40);  
     if (gameState==GAMEWAIT) text ("collect 3 flowers, press space to start", width/2, height/2);
-    else if (gameState==GAMEOVER) text ("game over", width/2, height/2);
+    else if (gameState==GAMEOVER_STOLEN_TIME) {
+    image(gameover,width/2,height/2); 
+    text ("game over - the gray men have stolen all of your time", width/2, height/2);
+    }
+    else if (gameState==GAMEOVER_TIMEOUT) {
+    image(gameover,width/2,height/2); 
+    text ("game over - your time is over", width/2, height/2);
+    }
     else if (gameState==GAMEWON) text ("won in "+ round(time) + " seconds", width/2, height/2);
   }
 
@@ -364,7 +373,7 @@ void updatePlayer() {
       time+=1/frameRate;
     } else if (keyPressed && key==' ') {
       if (gameState==GAMEWAIT) gameState=GAMERUNNING;
-      else if (gameState==GAMEOVER || gameState==GAMEWON) newGame();
+      else if (gameState==GAMEOVER_STOLEN_TIME ||gameState==GAMEOVER_TIMEOUT || gameState==GAMEWON) newGame();
     }
     //horizontal scrolling
     screenLeftX = playerX - width/2;
@@ -378,13 +387,14 @@ void updatePlayer() {
     drawBackground();
     drawMap();
     drawPlayer();
-    drawClock();
-    drawText();
-
-    //draw the enemies
+        //draw the enemies
     for (int i=0; i<enemys.size(); i++) {
       enemys.get(i).drawEnemy(gX[i], gY[i], gDiameter);
     }
+    drawClock();
+    drawText();
+
+
 
     //win when x flowers collected
     if (counter==2) gameState=GAMEWON;
@@ -406,7 +416,8 @@ void updatePlayer() {
       }
     }
 
-    if (clockDeg<0 || clockDeg>360) gameState=GAMEOVER ;
+    if (clockSecs<0) gameState=GAMEOVER_STOLEN_TIME ;
+    if (clockSecs>=60) gameState=GAMEOVER_TIMEOUT;
 
     clockSecs=int(clockDeg)/6;
     //  println("time passed: "+clockSecs);
