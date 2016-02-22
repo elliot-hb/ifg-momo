@@ -210,7 +210,7 @@ void drawBackground() {
   float x = map (screenLeftX, map.widthPixel()/2-width/2, -backgroundImg.width/2+width/2, -0.5);
   float y = map (screenTopY, map.heightPixel()/2-height/2, -backgroundImg.height/2+height/2, -0.5);
   background(0);
-//image (backgroundImg, x+1000, y+400);
+  //image (backgroundImg, x+1000, y+400);
 }
 
 
@@ -235,7 +235,7 @@ void drawPlayer() {
     // draw a line to the next hole
     Map.TileReference nextHole = map.findClosestTileInRect (playerX-100, playerY-100, 200, 200, "H");
     stroke(255, 0, 255);
-    if (nextHole!=null) line (playerX-screenLeftX, playerY-screenTopY,
+    if (nextHole!=null) line (playerX-screenLeftX, playerY-screenTopY, 
       nextHole.centerX-screenLeftX, nextHole.centerY-screenTopY);
   }
 }
@@ -273,10 +273,10 @@ void draw() {
   //use the following if you want vertical scrolling:
   screenTopY = playerY - height/2;
 
- drawBackground();
+  drawBackground();
   drawMap();
-  drawPlayer();
   drawClock();
+  drawPlayer();
   drawText();
 
 

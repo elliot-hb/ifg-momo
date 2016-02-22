@@ -1,7 +1,7 @@
 void updatePlayer() {
-  // update player
+  // update player, actually the collisions are calculated here.
   gravity=0.5;
-  float nextX = playerX + playerVX, 
+  float nextX = playerX + playerVX,
     nextY = playerY + playerVY;
 
   //collision bottom-half of player with top of walls

@@ -1,16 +1,17 @@
 void movePlayer() {
 
+  //everything that has to do with the player physics, except collisionsqq.
+
   playerVX+=playeraX;
   playerX+=playerVX;
 
-  // limitation of speed 
+  // limitation of speed
   if (4<playerVX) {
     playerVX=4;
   }
   if (playerVX<-4) {
     playerVX=-4;
   }
-
   // define acceleration
   if (!keyPressed) {
     if (1<abs(playerVX)) {
